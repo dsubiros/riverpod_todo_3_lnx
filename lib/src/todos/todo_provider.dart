@@ -66,13 +66,13 @@ class TodoNotifier extends _$TodoNotifier {
   Future<void> toggle(String id) async {
     state = state.copyWith(isLoading: true);
     // Simulate network delay
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(milliseconds: 20));
 
     AsyncValue.guard(() async {
       state = state.copyWith(
           isLoading: false,
           items: state.items
-              .map((item) => item.id != id
+              .map((item) => item.id == id
                   ? item.copyWith(isCompleted: !item.isCompleted)
                   : item)
               .toList());

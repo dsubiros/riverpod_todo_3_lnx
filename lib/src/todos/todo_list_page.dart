@@ -3,7 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gap/gap.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:riverpod_todo_3_lnx/src/todos/todo.dart';
 import 'package:riverpod_todo_3_lnx/src/todos/todo_provider.dart';
+
+// @riverpod
+// Todo _currentTodo(Ref ref) => throw UnimplementedError();
+
+// final _currentTodo = Prov
+final _currentTodo = Provider<Todo>((ref) => throw UnimplementedError());
 
 class TodoListPage extends HookConsumerWidget {
   const TodoListPage({super.key});
@@ -41,23 +49,46 @@ class TodoListPage extends HookConsumerWidget {
             const Gap(10),
             // TODO: Toolbar
             // TODO: Filtered Todo List
-            ...todoState.items.map((todo) => Dismissible(
-                  // key: ValueKey(todo.id),
-                  key: UniqueKey(),
-                  onDismissed: (direction) => todoNotifier.remove(todo),
-                  child: ListTile(
-                    key: ValueKey(todo.id),
-                    title: Text(todo.description),
-                  ),
-                )),
-            // TODO: Todo List, for testing purposes
             ...todoState.items.map(
-              (todo) => Text(' - ${todo.toString()}'),
-            )
+              (todo) => Dismissible(
+                // key: ValueKey(todo.id),
+                key: UniqueKey(),
+                onDismissed: (direction) => todoNotifier.remove(todo),
+                child: ProviderScope(
+                    overrides: [_currentTodo.overrideWithValue(todo)],
+                    child: const TodoItem()),
+                // child: ListTile(
+                //   key: ValueKey(todo.id),
+                //   title: Text(todo.description),
+              ),
+            ),
+            // TODO: Todo List, for testing purposes
+            Gap(40),
+            ...todoState.items.map((todo) => Text(' - ${todo.toString()}'))
           ],
         ),
       ),
     );
+  }
+}
+
+class TodoItem extends HookConsumerWidget {
+  const TodoItem({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final item = ref.watch(_currentTodo);
+    final notifier = ref.watch(todoNotifierProvider.notifier);
+
+    return Material(
+        color: Colors.white,
+        elevation: 6,
+        child: ListTile(
+          leading: Checkbox(
+              value: item.isCompleted,
+              onChanged: (_) => notifier.toggle(item.id)),
+          key: ValueKey(item.id),
+          title: Text(item.description),
+        ));
   }
 }
 
