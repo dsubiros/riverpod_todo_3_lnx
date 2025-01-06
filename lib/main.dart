@@ -4,7 +4,6 @@ import 'package:riverpod_todo_3_lnx/src/todos/todo_list_page.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
-  // runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -13,7 +12,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      // title: 'Material App',
       home: Scaffold(
         backgroundColor: Colors.white,
         body: TodoListPage(),
