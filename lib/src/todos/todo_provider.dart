@@ -46,17 +46,17 @@ class TodoNotifier extends _$TodoNotifier {
     });
   }
 
-  Future<void> edit(String id, String description) async {
+  Future<void> edit({required String id, required String description}) async {
     state = state.copyWith(isLoading: true);
 
     // Simulate network delay
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(milliseconds: 2));
 
     AsyncValue.guard(() async {
       state = state.copyWith(
           isLoading: false,
           items: state.items
-              .map((item) => item.id != id
+              .map((item) => item.id == id
                   ? item.copyWith(description: description)
                   : item)
               .toList());

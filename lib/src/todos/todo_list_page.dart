@@ -79,16 +79,59 @@ class TodoItem extends HookConsumerWidget {
     final item = ref.watch(_currentTodo);
     final notifier = ref.watch(todoNotifierProvider.notifier);
 
+    final itemFocusNode = useFocusNode();
+    final itemIsFocused = useIsFocused(itemFocusNode);
+
+    final textEditingController = useTextEditingController();
+    final textFieldFocusNode = useFocusNode();
+
     return Material(
         color: Colors.white,
         elevation: 6,
-        child: ListTile(
-          leading: Checkbox(
-              value: item.isCompleted,
-              onChanged: (_) => notifier.toggle(item.id)),
-          key: ValueKey(item.id),
-          title: Text(item.description),
+        child: Focus(
+          focusNode: itemFocusNode,
+          onFocusChange: (focus) {
+            if (focus) {
+              textEditingController.text = item.description;
+            } else {
+              /// For performance, commit changes only when the textfield is unfocused
+              notifier.edit(
+                  id: item.id, description: textEditingController.text);
+            }
+          },
+          child: ListTile(
+            onTap: () {
+              itemFocusNode.requestFocus();
+              textFieldFocusNode.requestFocus();
+            },
+            leading: Checkbox(
+                value: item.isCompleted,
+                onChanged: (_) => notifier.toggle(item.id)),
+            key: ValueKey(item.id),
+            title: (itemIsFocused)
+                ? TextField(
+                    autofocus: true,
+                    controller: textEditingController,
+                    focusNode: textFieldFocusNode,
+                  )
+                : Text(item.description),
+          ),
         ));
+  }
+
+  bool useIsFocused(FocusNode node) {
+    final isFocused = useState(node.hasFocus);
+
+    useEffect(() {
+      void listener() {
+        isFocused.value = node.hasFocus;
+      }
+
+      node.addListener(listener);
+      return () => node.removeListener(listener);
+    }, [isFocused]);
+
+    return isFocused.value;
   }
 }
 
