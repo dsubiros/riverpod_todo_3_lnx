@@ -17,7 +17,9 @@ class TodoListPage extends HookConsumerWidget {
   const TodoListPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final todoState = ref.watch(todoListNotifierProvider);
+    final isLoading =
+        ref.watch(todoListNotifierProvider.select((i) => i.isLoading));
+    final filteredItems = ref.watch(filteredTodoList);
     final todoNotifier = ref.watch(todoListNotifierProvider.notifier);
     final newTodoController = useTextEditingController();
 
@@ -33,13 +35,12 @@ class TodoListPage extends HookConsumerWidget {
               height: 70,
               child: TextField(
                 controller: newTodoController,
-                enabled: !todoState.isLoading,
+                enabled: !isLoading,
                 decoration: InputDecoration(
                     focusedBorder: const UnderlineInputBorder(
                         borderSide: BorderSide(color: Colors.blue)),
                     labelText: 'What needs to be done?',
-                    helper:
-                        todoState.isLoading ? const TextFieldHelper() : null),
+                    helper: isLoading ? const TextFieldHelper() : null),
                 onSubmitted: (value) {
                   todoNotifier.add(value);
                   newTodoController.clear();
@@ -47,26 +48,25 @@ class TodoListPage extends HookConsumerWidget {
               ),
             ),
             const Gap(10),
-            // TODO: Toolbar
+            // Toolbar
             const Toolbar(),
             const Gap(20),
-            // TODO: Filtered Todo List
-            ...todoState.items.map(
+            // Filtered Todo List
+            ...filteredItems.map(
               (todo) => Dismissible(
-                // key: ValueKey(todo.id),
                 key: UniqueKey(),
                 onDismissed: (direction) => todoNotifier.remove(todo),
                 child: ProviderScope(
                     overrides: [_currentTodo.overrideWithValue(todo)],
                     child: const TodoItem()),
-                // child: ListTile(
-                //   key: ValueKey(todo.id),
-                //   title: Text(todo.description),
               ),
             ),
-            // TODO: Todo List, for testing purposes
-            Gap(40),
-            ...todoState.items.map((todo) => Text(' - ${todo.toString()}'))
+            // Show text Todo List, for testing purposes
+            const Gap(40),
+            ...ref
+                .watch(todoListNotifierProvider)
+                .items
+                .map((todo) => Text(' - ${todo.toString()}'))
           ],
         ),
       ),

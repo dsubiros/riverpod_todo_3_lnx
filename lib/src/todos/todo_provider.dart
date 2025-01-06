@@ -94,3 +94,18 @@ final incompleteTodosCount = Provider<int>((ref) => ref
     .items
     .where((item) => !item.isCompleted)
     .length);
+
+/// Filter Todo List using the currently selected TodoFilter
+final filteredTodoList = Provider<List<Todo>>((ref) {
+  final filter = ref.watch(todoListFilter);
+  final items = ref.watch(todoListNotifierProvider).items;
+
+  switch (filter) {
+    case TodoListFilter.active:
+      return items.where((items) => !items.isCompleted).toList();
+    case TodoListFilter.complete:
+      return items.where((items) => items.isCompleted).toList();
+    default:
+      return items;
+  }
+});
