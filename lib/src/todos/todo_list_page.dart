@@ -17,8 +17,8 @@ class TodoListPage extends HookConsumerWidget {
   const TodoListPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final todoState = ref.watch(todoNotifierProvider);
-    final todoNotifier = ref.watch(todoNotifierProvider.notifier);
+    final todoState = ref.watch(todoListNotifierProvider);
+    final todoNotifier = ref.watch(todoListNotifierProvider.notifier);
     final newTodoController = useTextEditingController();
 
     return GestureDetector(
@@ -48,6 +48,8 @@ class TodoListPage extends HookConsumerWidget {
             ),
             const Gap(10),
             // TODO: Toolbar
+            const Toolbar(),
+            const Gap(20),
             // TODO: Filtered Todo List
             ...todoState.items.map(
               (todo) => Dismissible(
@@ -72,12 +74,78 @@ class TodoListPage extends HookConsumerWidget {
   }
 }
 
+class Toolbar extends ConsumerWidget {
+  const Toolbar({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final count = ref.watch(incompleteTodosCount);
+    final filter = ref.watch(todoListFilter);
+    final notifier = ref.watch(todoListFilter.notifier);
+
+    isSelected(TodoListFilter target) => target == filter;
+
+    selectFilter(TodoListFilter target) => notifier.state = target;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(child: Text('$count items left')),
+        ToolbarItem(
+            text: 'ALL',
+            message: 'All items',
+            isSelected: isSelected(TodoListFilter.all),
+            onTap: () => selectFilter(TodoListFilter.all)),
+        ToolbarItem(
+            text: 'ACTIVE',
+            message: 'Active items',
+            isSelected: isSelected(TodoListFilter.active),
+            onTap: () => selectFilter(TodoListFilter.active)),
+        ToolbarItem(
+            text: 'COMPLETE',
+            message: 'Items already complete',
+            isSelected: isSelected(TodoListFilter.complete),
+            onTap: () => selectFilter(TodoListFilter.complete)),
+      ],
+    );
+  }
+}
+
+class ToolbarItem extends StatelessWidget {
+  final String text;
+  final String message;
+  final bool isSelected;
+  final void Function()? onTap;
+
+  const ToolbarItem({
+    super.key,
+    required this.text,
+    required this.message,
+    this.isSelected = false,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: message,
+      child: TextButton(
+          onPressed: onTap,
+          child: Text(text,
+              style:
+                  TextStyle(color: isSelected ? Colors.blue : Colors.black))),
+    );
+  }
+}
+
 class TodoItem extends HookConsumerWidget {
   const TodoItem({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final item = ref.watch(_currentTodo);
-    final notifier = ref.watch(todoNotifierProvider.notifier);
+    final notifier = ref.watch(todoListNotifierProvider.notifier);
 
     final itemFocusNode = useFocusNode();
     final itemIsFocused = useIsFocused(itemFocusNode);

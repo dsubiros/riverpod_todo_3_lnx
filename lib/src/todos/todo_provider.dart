@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:riverpod_todo_3_lnx/src/todos/todo.dart';
 import 'package:riverpod_todo_3_lnx/src/todos/todo_state.dart';
@@ -8,7 +9,7 @@ part 'todo_provider.g.dart';
 const _uuid = Uuid();
 
 @riverpod
-class TodoNotifier extends _$TodoNotifier {
+class TodoListNotifier extends _$TodoListNotifier {
   @override
   TodoState build() {
     return const TodoState(items: [
@@ -79,3 +80,17 @@ class TodoNotifier extends _$TodoNotifier {
     });
   }
 }
+
+enum TodoListFilter {
+  all,
+  active,
+  complete,
+}
+
+final todoListFilter = StateProvider((_) => TodoListFilter.all);
+
+final incompleteTodosCount = Provider<int>((ref) => ref
+    .watch(todoListNotifierProvider)
+    .items
+    .where((item) => !item.isCompleted)
+    .length);
